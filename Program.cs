@@ -25,7 +25,17 @@ config["SmtpSettings:Password"] = Env.GetString("SMTP_PASSWORD", config["SmtpSet
 config["SmtpSettings:FromEmail"] = Env.GetString("SMTP_FROM", config["SmtpSettings:FromEmail"]);
 config["SmtpSettings:EnableSsl"] = Env.GetString("SMTP_ENABLE_SSL", config["SmtpSettings:EnableSsl"]);
 
+var connectionString = Env.GetString("DB_CONNECTION_STRING");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("Database connection string is missing. Ensure it is set in the .env file.");
+}
+
+// Override the appsettings.json connection string with the .env value
+builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
 // Add services to the container.
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddControllers();
