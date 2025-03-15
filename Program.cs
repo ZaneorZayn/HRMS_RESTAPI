@@ -11,8 +11,19 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Env.Load();
+
+var config = builder.Configuration;
+config["SmtpSettings:Host"] = Env.GetString("SMTP_HOST", config["SmtpSettings:Host"]);
+config["SmtpSettings:Port"] = Env.GetString("SMTP_PORT", config["SmtpSettings:Port"]);
+config["SmtpSettings:Username"] = Env.GetString("SMTP_USERNAME", config["SmtpSettings:Username"]);
+config["SmtpSettings:Password"] = Env.GetString("SMTP_PASSWORD", config["SmtpSettings:Password"]);
+config["SmtpSettings:FromEmail"] = Env.GetString("SMTP_FROM", config["SmtpSettings:FromEmail"]);
+config["SmtpSettings:EnableSsl"] = Env.GetString("SMTP_ENABLE_SSL", config["SmtpSettings:EnableSsl"]);
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>

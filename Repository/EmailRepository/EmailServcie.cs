@@ -14,14 +14,16 @@ public class EmailService : IEmailService
 
     public async Task SendEmailAsync(EmailDto request)
     {
+       
+
         var smtpSettings = _configuration.GetSection("SmtpSettings");
 
-        string host = smtpSettings["Host"];
-        string portString = smtpSettings["Port"];
-        string username = smtpSettings["Username"];
-        string password = smtpSettings["Password"];
-        string fromEmail = smtpSettings["FromEmail"];
-        string enableSslString = smtpSettings["EnableSsl"];
+        string host = smtpSettings["Host"] ?? throw new Exception("SMTP Host is missing.");
+        string portString = smtpSettings["Port"] ?? throw new Exception("SMTP Port is missing.");
+        string username = smtpSettings["Username"] ?? throw new Exception("SMTP Username is missing.");
+        string password = smtpSettings["Password"] ?? throw new Exception("SMTP Password is missing.");
+        string fromEmail = smtpSettings["FromEmail"] ?? throw new Exception("SMTP FromEmail is missing.");
+        string enableSslString = smtpSettings["EnableSsl"] ?? "true"; // Default to true
 
         if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(portString) || string.IsNullOrEmpty(username) ||
             string.IsNullOrEmpty(password) || string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(enableSslString))
