@@ -52,10 +52,18 @@ namespace hrms_api.Repository.SystemUserRepository
             {
                 throw new UnauthorizedAccessException("You do not have permission to create users.");
             }
+            //check if username exist
+            
+            var existUsername = await _context.SystemUsers.AnyAsync(u => u.Username == systemUserDto.Username);
 
+            if (existUsername)
+            {
+                throw new Exception("Username already exists.");
+            }
+            
             var systemuser = new SystemUser
             {
-                Username = systemUserDto.Username,
+                Username = systemUserDto.Username!,
                 Password = hashpassword,
                 RoleId = systemUserDto.RoleId,
             };

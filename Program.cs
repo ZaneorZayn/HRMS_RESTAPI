@@ -15,8 +15,10 @@ using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Env.Load();
 
+
+Env.Load();
+//Get from env file 
 var config = builder.Configuration;
 config["SmtpSettings:Host"] = Env.GetString("SMTP_HOST", config["SmtpSettings:Host"]);
 config["SmtpSettings:Port"] = Env.GetString("SMTP_PORT", config["SmtpSettings:Port"]);
@@ -113,6 +115,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
