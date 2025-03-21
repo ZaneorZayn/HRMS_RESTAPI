@@ -7,8 +7,8 @@ namespace hrms_api.Repository.EmployeeRepository
     {
         Task<Employee> GetByIdAsync(int id);
         Task<List<Employee>> GetAllAsync();
-        Task AddAsync(EmployeeDto employeedto);
-        Task UpdateAsync(int id , EmployeeDto employeedto);
+        Task AddAsync(CreateEmployeeDto createEmployeeDto);
+        Task UpdateAsync(int id , UpdateEmployeeDto updateEmployeeDto);
         Task DeleteAsync(int id );
         Task LinkSystemUserAsync(int employeeId, int systemUserId);
         Task UnlinkSystemUserAsync(int employeeId);

@@ -49,20 +49,17 @@ namespace hrms_api.Controllers.EmployeeController
 
                 return BadRequest(ex.Message);
             }
-               
-
-
         }
-
-
         
+        
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPost]
-        public async Task<IActionResult> AddEmployee(EmployeeDto employee)
+        public async Task<IActionResult> AddEmployee([FromForm] CreateEmployeeDto createEmployeeDto)
         {
             try
             {
-                await _employeerepo.AddAsync(employee); 
-                return Ok(new { message = "Employee added successfully", Data = employee });
+                await _employeerepo.AddAsync(createEmployeeDto); 
+                return Ok(new { message = "Employee added successfully", Data = createEmployeeDto });
             }
             catch (Exception ex)
             {
@@ -86,12 +83,12 @@ namespace hrms_api.Controllers.EmployeeController
         }
         
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditEmployee(int id, EmployeeDto employeedto)
+        public async Task<IActionResult> EditEmployee(int id, [FromForm] UpdateEmployeeDto updateEmployeeDto)
         {
             try
             {
-                await _employeerepo.UpdateAsync(id, employeedto);
-                return Ok(new { message = "Employee was updated successfully", Data = employeedto });
+                await _employeerepo.UpdateAsync(id, updateEmployeeDto);
+                return Ok(new { message = "Employee was updated successfully", Data = updateEmployeeDto });
             }
             catch (Exception ex)
             {
@@ -113,9 +110,8 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
 
-       
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [HttpPost("{employeeId}/unlink-systemuser")]
-
         public async Task<IActionResult> UnlinkSystemUser(int employeeId)
         {
             try
@@ -128,5 +124,6 @@ namespace hrms_api.Controllers.EmployeeController
                 return BadRequest(ex.Message);
             }
         }
+        
     }
 }

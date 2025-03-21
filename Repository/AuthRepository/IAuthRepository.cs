@@ -1,4 +1,5 @@
 ﻿using hrms_api.Dto;
+using hrms_api.Dto.AuthenticationDto;
 using hrms_api.Model;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,7 @@ namespace hrms_api.Repository.AuthRepository
 
         Task MarkOtpAsUsed(OtpRequest otpRequest);
         Task ResetPassword(ResetPasswordDto resetPasswordDto);
-
+        Task <ProfileDto> GetProfile(int systemUserId );
+        Task <EditProfileDto> EditProfile( EditProfileDto editProfileDto);
     }
 }

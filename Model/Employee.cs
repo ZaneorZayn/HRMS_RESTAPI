@@ -14,6 +14,10 @@ namespace hrms_api.Model
         public DateTime DOB { get; set; }
 
         public DateTime HiredDate { get; set; }
+        
+        public string? PhoneNumber { get; set; }
+        
+        public string? ImageUrl { get; set; }
 
         public string? Address { get; set; }
 

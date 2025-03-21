@@ -3,9 +3,9 @@ using hrms_api.Dto;
 using hrms_api.Model;
 using hrms_api.Repository.EmailRepository;
 using hrms_api.Repository.UserContext;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+using hrms_api.Helper;
+
 
 namespace hrms_api.Repository.EmployeeRepository
 {
@@ -15,62 +15,100 @@ namespace hrms_api.Repository.EmployeeRepository
         private readonly AppDbContext _context;
         private readonly IUserContext _userContext;
         private readonly IEmailService _emailService;
-        public EmployeeRepository(AppDbContext context, IUserContext userContext, IEmailService emailService)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public EmployeeRepository (AppDbContext context, IUserContext userContext, IEmailService emailService, IWebHostEnvironment webHostEnvironment, IHttpContextAccessor httpContextAccessor)
         {
 
             _context = context;
             _userContext = userContext;
             _emailService = emailService;
+            _webHostEnvironment = webHostEnvironment;
+            _httpContextAccessor = httpContextAccessor;
 
         }
-        public async Task AddAsync(EmployeeDto employeedto)
+        public async Task AddAsync(CreateEmployeeDto createEmployeeDto)
         {
 
-            var role = _userContext.GetUserRole();
+            /*var role = _userContext.GetUserRole();
             if (role != "Admin" && role != "SuperAdmin")
             {
                 throw new Exception("You do not have permission to add employees.");
+            }*/
+            var httpContext = _httpContextAccessor.HttpContext;
+            var baseurl = $"{httpContext!.Request.Scheme}://{httpContext.Request.Host}";
+            string? imagePath = null;
+            if (createEmployeeDto.ImageFile != null)
+            {
+                var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot" ,"Uploads");
+
+                if (!Directory.Exists(uploadFolder))
+                {
+                    Directory.CreateDirectory(uploadFolder);
+                }
+                
+                var uniqueFilename = $"{Guid.NewGuid()}_{createEmployeeDto.ImageFile.FileName}";
+                var filePath = Path.Combine(uploadFolder, uniqueFilename);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await createEmployeeDto.ImageFile.CopyToAsync(stream);
+                }
+
+                
+                imagePath = $"{baseurl}/Uploads/{uniqueFilename}";     
+            }
+            else
+            {
+                imagePath = Helper.AvatarGenerator.GenerateAvatar(createEmployeeDto.Name , baseurl);
             }
 
-            var newEmployee = new Employee
+            var employee = new Employee
             {
-                Name = employeedto.Name,
-                Email = employeedto.Email,
-                Address = employeedto.Address,
-                DOB = employeedto.DOB,
-                HiredDate = employeedto.HiredDate
-
+                Name = createEmployeeDto.Name,
+                Email = createEmployeeDto.Email,
+                HiredDate = createEmployeeDto.HiredDate,
+                DOB = createEmployeeDto.DOB,
+                Address = createEmployeeDto.Address,
+                PhoneNumber = createEmployeeDto.PhoneNumber,
+                ImageUrl = imagePath
             };
-            _context.Employees.Add(newEmployee);
+            _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
 
-
         }
-
-
-
-
+        
         public async Task DeleteAsync(int id)
         {
-
             var role = _userContext.GetUserRole();
             if (role != "Admin" && role != "SuperAdmin")
             {
                 throw new Exception("You do not have permission to delete employees.");
             }
 
-
             var employee = await _context.Employees.FindAsync(id);
             if (employee == null)
             {
-                throw new Exception("Employee not found");
+                throw new Exception("Employee not found.");
             }
-            else
+
+            // Delete employee image if it exists
+            if (!string.IsNullOrEmpty(employee.ImageUrl))
             {
-                _context.Employees.Remove(employee);
-                await _context.SaveChangesAsync();
+                var uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Uploads");
+                var imageFileName = Path.GetFileName(employee.ImageUrl); // Extracts just the filename
+
+                var imagePath = Path.Combine(uploadFolder, imageFileName);
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
+                }
             }
+
+            _context.Employees.Remove(employee);
+            await _context.SaveChangesAsync();
         }
+
 
         public async Task<List<Employee>> GetAllAsync()
         {
@@ -156,32 +194,63 @@ namespace hrms_api.Repository.EmployeeRepository
         }
     
 
-        public async Task UpdateAsync(int id, EmployeeDto employeedto)
+        public async Task UpdateAsync(int id, UpdateEmployeeDto updateEmployeeDto)
         {
-
             var role = _userContext.GetUserRole();
             if (role != "Admin" && role != "SuperAdmin")
             {
                 throw new Exception("You do not have permission to update employees.");
             }
+
             var updateemployee = await _context.Employees.FindAsync(id);
             if (updateemployee == null)
             {
                 throw new Exception("Employee not found");
             }
 
+            // Update employee details
+            updateemployee.Name = updateEmployeeDto.Name;
+            updateemployee.Email = updateEmployeeDto.Email;
+            updateemployee.Address = updateEmployeeDto.Address;
+            updateemployee.DOB = updateEmployeeDto.DOB;
+            updateemployee.HiredDate = updateEmployeeDto.HiredDate;
+            updateemployee.PhoneNumber = updateEmployeeDto.PhoneNumber;
 
-            updateemployee.Name = employeedto.Name;
-            updateemployee.Email = employeedto.Email;
-            updateemployee.Address = employeedto.Address;
-            updateemployee.DOB = employeedto.DOB;
-            updateemployee.HiredDate = employeedto.HiredDate;
+            // Handle Image Upload
+            if (updateEmployeeDto.ImageFile != null)
+            {
+                var uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Uploads");
 
+                if (!Directory.Exists(uploadFolder))
+                {
+                    Directory.CreateDirectory(uploadFolder);
+                }
 
+                // Delete old image if exists
+                if (!string.IsNullOrEmpty(updateemployee.ImageUrl))
+                {
+                    var oldPathImage = Path.Combine(_webHostEnvironment.WebRootPath, updateemployee.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldPathImage))
+                    {
+                        System.IO.File.Delete(oldPathImage);
+                    }
+                }
 
-                await _context.SaveChangesAsync();
-            
+                // Save new image
+                var uniqueFileName = $"{Guid.NewGuid()}_{updateEmployeeDto.ImageFile.FileName}";
+                var filePath = Path.Combine(uploadFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await updateEmployeeDto.ImageFile.CopyToAsync(fileStream);
+                }
+
+                updateemployee.ImageUrl = $"/Uploads/{uniqueFileName}";
+            }
+
+            await _context.SaveChangesAsync();
         }
+
 
         public async Task UnlinkSystemUserAsync(int employeeId)
         {
