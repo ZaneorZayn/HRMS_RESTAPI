@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using hrms_api.Dto.AuthenticationDto;
+using hrms_api.Repository.EmailRepository;
 using hrms_api.Repository.UserContext;
 
 namespace hrms_api.Repository.AuthRepository
@@ -17,15 +18,17 @@ namespace hrms_api.Repository.AuthRepository
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IUserContext _userContext;
+        private readonly IEmailService _emailService;
 
-        public AuthRepository(AppDbContext context, IConfiguration configuration, IUserContext userContext)
+        public AuthRepository(AppDbContext context, IConfiguration configuration, IUserContext userContext , IEmailService emailService)
         {
             _context = context;
             _configuration = configuration;
             _userContext = userContext;
+            _emailService = emailService;
         }
 
-        public async Task <string> GenerateOtpAsync(string email)
+        public async Task<string> GenerateOtpAsync (string email)
         {
             var otp = new Random().Next(100000, 999999).ToString();
 
@@ -33,8 +36,10 @@ namespace hrms_api.Repository.AuthRepository
                 .Where(x => x.email == email && !x.IsUsed)
                 .ToListAsync();
 
+            // Remove any existing unused OTPs
             _context.OtpRequests.RemoveRange(existingOtp);
 
+            // Add new OTP request
             var otpRequest = new OtpRequest
             {
                 email = email,
@@ -46,9 +51,18 @@ namespace hrms_api.Repository.AuthRepository
             await _context.OtpRequests.AddAsync(otpRequest);
             await _context.SaveChangesAsync();
 
-            return otp;
+            // Send OTP email
+            var emailBody = $"Your OTP for password reset is: <strong>{otp}</strong>. It is valid for 5 minutes.";
+            await _emailService.SendEmailAsync(new EmailDto
+            {
+                ToEmail = email,
+                Subject = "Password Reset OTP",
+                Body = emailBody
+            });
 
+            return otp;
         }
+
 
         public async Task<LoginResponeDto> LoginAsync(LoginRequest loginRequest)
         {
@@ -120,7 +134,7 @@ namespace hrms_api.Repository.AuthRepository
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.NewPassword);
 
-            otpRequest.IsUsed = true;
+            _context.OtpRequests.Remove(otpRequest);
 
             await _context.SaveChangesAsync();
         }
@@ -146,23 +160,20 @@ namespace hrms_api.Repository.AuthRepository
                 })
                 .FirstOrDefaultAsync();
 
-            if (profile == null)
-            {
-                // If no linked employee found, return only SystemUser details (Username and Role)
-                var systemUser = await _context.SystemUsers
-                    .Where(su => su.Id == systemUserId)
-                    .Select(su => new ProfileDto
-                    {
-                        SystemUserId = su.Id,
-                        Username = su.Username,
-                        Role = su.Role.Name
-                    })
-                    .FirstOrDefaultAsync();
+            if (profile != null) return profile;
+            // If no linked employee found, return only SystemUser details (Username and Role)
+            var systemUser = await _context.SystemUsers
+                .Where(su => su.Id == systemUserId)
+                .Select(su => new ProfileDto
+                {
+                    SystemUserId = su.Id,
+                    Username = su.Username,
+                    Role = su.Role.Name
+                })
+                .FirstOrDefaultAsync();
 
-                return systemUser!;
-            }
+            return systemUser!;
 
-            return profile;
         }
 
 

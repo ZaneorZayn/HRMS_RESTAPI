@@ -1,4 +1,5 @@
 ﻿using hrms_api.Dto;
+using hrms_api.Filter;
 using hrms_api.Model;
 using hrms_api.Repository.SystemUserRepository;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,7 @@ namespace hrms_api.Controllers.SystemUserController
         {
             _systemuserrepo = systemuserrepo;
         }
-
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpGet]
 
         public async Task<IActionResult> GetAllSystemUser()
@@ -32,7 +33,7 @@ namespace hrms_api.Controllers.SystemUserController
                 return BadRequest(ex.Message);
             }
         }
-
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpGet("{id}")]
 
         public async Task<IActionResult> GetSystemUserById(int id)
@@ -40,28 +41,32 @@ namespace hrms_api.Controllers.SystemUserController
             try
             {
                 var systemuser = await _systemuserrepo.GetByIdAsync(id);
-                return Ok(
-                    new {
-                        message = "success",
-                        StatusCode = 201,
-                        Data= systemuser
-                    });
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    message = "success",
+                    status = StatusCodes.Status200OK,
+                    data = systemuser
+                });
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
-
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpPost]
-
-        public async Task<IActionResult> AddSystemUser (SystemUserDto systemUserDto)
+        public async Task<IActionResult> AddSystemUser (SystemUserCreateDto systemUserCreateDto)
         {
 
             try
             {   
-                await _systemuserrepo.AddAsync(systemUserDto);
-                return Ok(new {message = "SystemUser add successfully", StatusCode =200 ,Data = systemUserDto});
+                await _systemuserrepo.AddAsync(systemUserCreateDto);
+                return StatusCode(StatusCodes.Status201Created, new
+                {
+                    message = "Successfully create system user",
+                    status = StatusCodes.Status201Created,
+                    data = systemUserCreateDto
+                });
             }
             catch (Exception ex)
             {
@@ -69,21 +74,27 @@ namespace hrms_api.Controllers.SystemUserController
             }
         }
 
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpPut("{id}")]
 
-        public async Task<IActionResult> EditSystemUser(int id ,SystemUserDto systemUserDto)
+        public async Task<IActionResult> EditSystemUser(int id ,SystemUserEditDto systemUserEditDto)
         {
             try
             {
-                await _systemuserrepo.UpdateAsync(id, systemUserDto);
-                return Ok(new { message = "SystemUser was updated successfully", Data = systemUserDto });
+                await _systemuserrepo.UpdateAsync(id, systemUserEditDto);
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    message = "Successfully update system user",
+                    status = StatusCodes.Status200OK,
+                    data = systemUserEditDto
+                });
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
-
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpDelete("{id}")]
 
         public async Task<IActionResult> DeleteSystemUser(int id)
@@ -97,8 +108,13 @@ namespace hrms_api.Controllers.SystemUserController
                 }
 
                 await _systemuserrepo.DeleteAsync(id);
-                
-                return Ok(new { message = "SystemUser was deleted successfully", Data = systemuser });
+
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    message = "Successfully delete system user",
+                    status = StatusCodes.Status200OK,
+
+                });
             }
             catch (Exception ex)
             {

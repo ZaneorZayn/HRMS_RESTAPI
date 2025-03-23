@@ -47,29 +47,27 @@ namespace hrms_api.Controllers.AuthController
         [HttpPost("request-otp")]
         public async Task<IActionResult> RequestOtp([FromBody] RequestOtpDto request)
         {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Email) || !new EmailAddressAttribute().IsValid(request.Email))
+                {
+                    return BadRequest("Invalid email format.");
+                }
+                var employee = await _context.Employees.FirstOrDefaultAsync(x => x.Email == request.Email);
+                if (employee == null)
+                {
+                    return BadRequest("No account found with this email.");
+                }
+
+                var otp = await _authRepository.GenerateOtpAsync(request.Email);
+
+                return Ok("OTP has been sent to your email.");
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
             
-            if (string.IsNullOrWhiteSpace(request.Email) || !new EmailAddressAttribute().IsValid(request.Email))
-            {
-                return BadRequest("Invalid email format.");
-            }
-            var employee = await _context.Employees.FirstOrDefaultAsync(x => x.Email == request.Email);
-            if (employee == null)
-            {
-                return BadRequest("No account found with this email.");
-            }
-
-            var otp = await _authRepository.GenerateOtpAsync(request.Email);
-
-            var emailBody = $"Your OTP for password reset is: <strong>{otp}</strong>. It is valid for 5 minutes.";
-
-            await _emailService.SendEmailAsync(new EmailDto
-            {
-                ToEmail = request.Email,
-                Subject = "Password Reset OTP",
-                Body = emailBody
-            });
-
-            return Ok("OTP has been sent to your email.");
         }
 
         [HttpPost("reset-password")]
@@ -114,7 +112,7 @@ namespace hrms_api.Controllers.AuthController
                
                 var editProfile = await _authRepository.EditProfile( editProfileDto);
                 
-                return Ok(new { message = " Update profile successfuly", data = editProfile });
+                return Ok(new { message = " Update profile successfully", data = editProfile });
             }
             catch (Exception e)
             {

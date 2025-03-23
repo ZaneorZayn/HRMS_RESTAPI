@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using hrms_api.Filter;
 
 namespace hrms_api.Controllers.EmployeeController
 {
     [Route("api/[controller]")]
-    [Authorize] //User must be authenticated
+    
     [ApiController]
     public class EmployeeController : ControllerBase
     {
@@ -21,14 +22,14 @@ namespace hrms_api.Controllers.EmployeeController
             _employeerepo = employeerepo;
         }
 
-        
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpGet]
         public async Task<IActionResult> GetAllEmployee()
         {
             try
             {
                 var employee = await _employeerepo.GetAllAsync();
-                return Ok(employee);
+                return StatusCode(StatusCodes.Status200OK, employee);
             }
             catch (Exception ex)
             {
@@ -37,13 +38,17 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
        
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEmployeeById(int id)
         {
             try
             {
                 var employee = await _employeerepo.GetByIdAsync(id);
-                return Ok(employee);
+                return StatusCode(
+                    StatusCodes.Status200OK, 
+                    employee
+                );
             }
             catch (Exception ex) {
 
@@ -52,14 +57,19 @@ namespace hrms_api.Controllers.EmployeeController
         }
         
         
-        [Authorize(Roles = "Admin,SuperAdmin")]
+       [CustomAuthorize("Admin","SuperAdmin")]
         [HttpPost]
         public async Task<IActionResult> AddEmployee([FromForm] CreateEmployeeDto createEmployeeDto)
         {
             try
-            {
+            {   
                 await _employeerepo.AddAsync(createEmployeeDto); 
-                return Ok(new { message = "Employee added successfully", Data = createEmployeeDto });
+                return StatusCode(StatusCodes.Status201Created, new
+                {   
+                    status = StatusCodes.Status201Created,
+                    message = "Successfully added employee." ,
+                    Data = createEmployeeDto
+                });
             }
             catch (Exception ex)
             {
@@ -67,14 +77,19 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
 
-        
+       [CustomAuthorize("Admin", "SuperAdmin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployee(int id)
         {
             try
             {   
                 await _employeerepo.DeleteAsync(id);
-                return Ok(new { message = "Employee deleted successfully" });
+                return StatusCode(StatusCodes.Status200OK, new
+                    {
+                        status = StatusCodes.Status200OK,
+                        message = "Successfully deleted employee.",
+                    }
+                );
             }
             catch (Exception ex)
             {
@@ -82,13 +97,22 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
         
+        
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> EditEmployee(int id, [FromForm] UpdateEmployeeDto updateEmployeeDto)
         {
             try
             {
                 await _employeerepo.UpdateAsync(id, updateEmployeeDto);
-                return Ok(new { message = "Employee was updated successfully", Data = updateEmployeeDto });
+                return StatusCode(
+                    StatusCodes.Status200OK, new
+                    {
+                        message = "Successfully updated employee.",
+                        data = updateEmployeeDto
+                    }
+                );
+
             }
             catch (Exception ex)
             {
@@ -96,13 +120,20 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
        
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpPost("{employeeId}/link-systemuser/{systemUserId}")]
         public async Task<IActionResult> LinkSystemUser(int employeeId, int systemUserId)
         {
             try
             {
                 await _employeerepo.LinkSystemUserAsync(employeeId, systemUserId);
-                return Ok(new { message = "SystemUser linked to Employee successfully" });
+                return StatusCode(
+                    StatusCodes.Status200OK, new
+                    {
+                        message = "Successfully linked employee.",
+                       
+                    }
+                );
             }
             catch (Exception ex)
             {
@@ -110,14 +141,19 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
 
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [CustomAuthorize("Admin","SuperAdmin")]
         [HttpPost("{employeeId}/unlink-systemuser")]
         public async Task<IActionResult> UnlinkSystemUser(int employeeId)
         {
             try
             {
                 await _employeerepo.UnlinkSystemUserAsync(employeeId);
-                return Ok(new { message = "SystemUser unlinked from Employee successfully" });
+                return StatusCode(
+                    StatusCodes.Status200OK, new
+                    {
+                        message = "Successfully unlinked employee.",
+                    }
+                );
             }
             catch (Exception ex)
             {

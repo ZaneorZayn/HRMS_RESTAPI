@@ -30,11 +30,7 @@ namespace hrms_api.Repository.EmployeeRepository
         public async Task AddAsync(CreateEmployeeDto createEmployeeDto)
         {
 
-            /*var role = _userContext.GetUserRole();
-            if (role != "Admin" && role != "SuperAdmin")
-            {
-                throw new Exception("You do not have permission to add employees.");
-            }*/
+           
             var httpContext = _httpContextAccessor.HttpContext;
             var baseurl = $"{httpContext!.Request.Scheme}://{httpContext.Request.Host}";
             string? imagePath = null;
@@ -60,7 +56,7 @@ namespace hrms_api.Repository.EmployeeRepository
             }
             else
             {
-                imagePath = Helper.AvatarGenerator.GenerateAvatar(createEmployeeDto.Name , baseurl);
+                imagePath = Helper.AvatarGenerator.GenerateAvatar(createEmployeeDto.Name! , baseurl);
             }
 
             var employee = new Employee
@@ -80,12 +76,7 @@ namespace hrms_api.Repository.EmployeeRepository
         
         public async Task DeleteAsync(int id)
         {
-            var role = _userContext.GetUserRole();
-            if (role != "Admin" && role != "SuperAdmin")
-            {
-                throw new Exception("You do not have permission to delete employees.");
-            }
-
+            
             var employee = await _context.Employees.FindAsync(id);
             if (employee == null)
             {
@@ -112,24 +103,12 @@ namespace hrms_api.Repository.EmployeeRepository
 
         public async Task<List<Employee>> GetAllAsync()
         {
-
-            var role = _userContext.GetUserRole();
-            if (role != "Admin" && role != "SuperAdmin")
-            {
-                throw new Exception("You do not have permission to view employees.");
-            }
-
             return await _context.Employees.ToListAsync();
         }
 
         public async Task<Employee> GetByIdAsync(int id)
         {
-
-            var role = _userContext.GetUserRole();
-            if (role != "Admin" && role != "SuperAdmin")
-            {
-                throw new Exception("You do not have permission to view employee.");
-            }
+            
             var employee = await _context.Employees.FindAsync(id);
 
             if (employee == null)
@@ -142,13 +121,6 @@ namespace hrms_api.Repository.EmployeeRepository
 
         public async Task LinkSystemUserAsync(int employeeId, int systemUserId)
         {
-
-            var role = _userContext.GetUserRole();
-            if (role != "Admin" && role != "SuperAdmin")
-            {
-                throw new Exception("You do not have permission to link employees to system users.");
-            }
-
             var employee = await _context.Employees.FindAsync(employeeId);
             var user = await _context.SystemUsers.FindAsync(systemUserId);
 
@@ -196,25 +168,19 @@ namespace hrms_api.Repository.EmployeeRepository
 
         public async Task UpdateAsync(int id, UpdateEmployeeDto updateEmployeeDto)
         {
-            var role = _userContext.GetUserRole();
-            if (role != "Admin" && role != "SuperAdmin")
-            {
-                throw new Exception("You do not have permission to update employees.");
-            }
-
-            var updateemployee = await _context.Employees.FindAsync(id);
-            if (updateemployee == null)
+            var employee = await _context.Employees.FindAsync(id);
+            if (employee == null)
             {
                 throw new Exception("Employee not found");
             }
 
             // Update employee details
-            updateemployee.Name = updateEmployeeDto.Name;
-            updateemployee.Email = updateEmployeeDto.Email;
-            updateemployee.Address = updateEmployeeDto.Address;
-            updateemployee.DOB = updateEmployeeDto.DOB;
-            updateemployee.HiredDate = updateEmployeeDto.HiredDate;
-            updateemployee.PhoneNumber = updateEmployeeDto.PhoneNumber;
+            employee.Name = updateEmployeeDto.Name;
+            employee.Email = updateEmployeeDto.Email;
+            employee.Address = updateEmployeeDto.Address;
+            employee.DOB = updateEmployeeDto.DOB;
+            employee.HiredDate = updateEmployeeDto.HiredDate;
+            employee.PhoneNumber = updateEmployeeDto.PhoneNumber;
 
             // Handle Image Upload
             if (updateEmployeeDto.ImageFile != null)
@@ -227,9 +193,9 @@ namespace hrms_api.Repository.EmployeeRepository
                 }
 
                 // Delete old image if exists
-                if (!string.IsNullOrEmpty(updateemployee.ImageUrl))
+                if (!string.IsNullOrEmpty(employee.ImageUrl))
                 {
-                    var oldPathImage = Path.Combine(_webHostEnvironment.WebRootPath, updateemployee.ImageUrl.TrimStart('/'));
+                    var oldPathImage = Path.Combine(_webHostEnvironment.WebRootPath, employee.ImageUrl.TrimStart('/'));
                     if (System.IO.File.Exists(oldPathImage))
                     {
                         System.IO.File.Delete(oldPathImage);
@@ -245,7 +211,7 @@ namespace hrms_api.Repository.EmployeeRepository
                     await updateEmployeeDto.ImageFile.CopyToAsync(fileStream);
                 }
 
-                updateemployee.ImageUrl = $"/Uploads/{uniqueFileName}";
+                employee.ImageUrl = $"/Uploads/{uniqueFileName}";
             }
 
             await _context.SaveChangesAsync();
@@ -254,13 +220,6 @@ namespace hrms_api.Repository.EmployeeRepository
 
         public async Task UnlinkSystemUserAsync(int employeeId)
         {
-            var role = _userContext.GetUserRole();
-
-            if (role != "Admin" && role != "SuperAdmin")
-            {
-                throw new Exception("You do not have permission to unlink employees from system users.");
-            }
-
             var employee = await _context.Employees.FindAsync(employeeId);
 
             if (employee == null)

@@ -19,7 +19,7 @@ namespace hrms_api.Repository.SystemUserRepository
             _context = context;
             _userContext = userContext;
         }
-        public async Task AddAsync(SystemUserDto systemUserDto)
+        public async Task AddAsync(SystemUserCreateDto systemUserCreateDto)
         {
             var loggedInUserRole = _userContext.GetUserRole();
 
@@ -30,10 +30,10 @@ namespace hrms_api.Repository.SystemUserRepository
 
             loggedInUserRole = loggedInUserRole.Trim().ToLower(); // Normalize role string
 
-            var hashpassword = BCrypt.Net.BCrypt.HashPassword(systemUserDto.Password);
+            var hashpassword = BCrypt.Net.BCrypt.HashPassword(systemUserCreateDto.Password);
 
             // Ensure the role exists
-            var roleToCreate = await _context.Roles.FindAsync(systemUserDto.RoleId);
+            var roleToCreate = await _context.Roles.FindAsync(systemUserCreateDto.RoleId);
             if (roleToCreate == null)
             {
                 throw new Exception("Role not found.");
@@ -54,7 +54,7 @@ namespace hrms_api.Repository.SystemUserRepository
             }
             //check if username exist
             
-            var existUsername = await _context.SystemUsers.AnyAsync(u => u.Username == systemUserDto.Username);
+            var existUsername = await _context.SystemUsers.AnyAsync(u => u.Username == systemUserCreateDto.Username);
 
             if (existUsername)
             {
@@ -63,9 +63,10 @@ namespace hrms_api.Repository.SystemUserRepository
             
             var systemuser = new SystemUser
             {
-                Username = systemUserDto.Username!,
+                Username = systemUserCreateDto.Username!,
                 Password = hashpassword,
-                RoleId = systemUserDto.RoleId,
+                RoleId = systemUserCreateDto.RoleId,
+                
             };
 
             _context.SystemUsers.Add(systemuser);
@@ -76,39 +77,10 @@ namespace hrms_api.Repository.SystemUserRepository
 
         public async Task DeleteAsync(int id)
         {
-            var loggedInUserRole = _userContext.GetUserRole();
-
-            if (string.IsNullOrEmpty(loggedInUserRole))
-            {
-                throw new UnauthorizedAccessException("Unable to determine user role.");
-            }
-
-            loggedInUserRole = loggedInUserRole.Trim().ToLower(); // Normalize role string
-
             var systemUserToDelete = await _context.SystemUsers.FindAsync(id);
             if (systemUserToDelete == null)
             {
                 throw new Exception("SystemUser not found.");
-            }
-
-            // Get role of the user being deleted
-            var roleToDelete = await _context.Roles.FindAsync(systemUserToDelete.RoleId);
-            if (roleToDelete == null)
-            {
-                throw new Exception("Role associated with user not found.");
-            }
-
-            string roleToDeleteName = roleToDelete.Name.Trim().ToLower(); // Normalize role name
-
-            // Apply role-based deletion rules
-            if (loggedInUserRole == "admin" && roleToDeleteName != "user")
-            {
-                throw new UnauthorizedAccessException("Admins can only delete Employee accounts.");
-            }
-
-            if (loggedInUserRole != "superadmin" && loggedInUserRole != "admin")
-            {
-                throw new UnauthorizedAccessException("You do not have permission to delete users.");
             }
 
             // Unlink SystemUser from Employee (if linked)
@@ -122,11 +94,16 @@ namespace hrms_api.Repository.SystemUserRepository
             await _context.SaveChangesAsync();
         }
 
-
-
-        public async Task<List<SystemUser>> GetAllAsync()
+        
+        public async Task<List<SystemUserGetDto>> GetAllAsync()
         {
-           var systemuser = await _context.SystemUsers.ToListAsync();
+            var systemuser = await _context.SystemUsers.Include(s => s.Role).Select(su => new SystemUserGetDto
+            {
+                Id = su.Id,
+                Username = su.Username,
+                RoleId = su.RoleId,
+                RoleName = su.Role != null ? su.Role.Name : "N/A"
+            }).ToListAsync();
 
             return systemuser;
         }
@@ -144,16 +121,9 @@ namespace hrms_api.Repository.SystemUserRepository
         }
 
 
-        public async Task UpdateAsync(int id, SystemUserDto systemUserDto)
+        public async Task UpdateAsync(int id, SystemUserEditDto systemUserEditDto)
         {
-            var loggedInUserRole = _userContext.GetUserRole();
-
-            if (string.IsNullOrEmpty(loggedInUserRole))
-            {
-                throw new UnauthorizedAccessException("Unable to determine user role.");
-            }
-
-            loggedInUserRole = loggedInUserRole.Trim().ToLower(); // Normalize role string
+           
 
             var systemuser = await _context.SystemUsers.FindAsync(id);
             if (systemuser == null)
@@ -162,29 +132,11 @@ namespace hrms_api.Repository.SystemUserRepository
             }
 
             // Get role of the user being updated
-            var roleToUpdate = await _context.Roles.FindAsync(systemuser.RoleId);
-            if (roleToUpdate == null)
-            {
-                throw new Exception("Role associated with user not found.");
-            }
-
-            string roleToUpdateName = roleToUpdate.Name.Trim().ToLower(); // Normalize role name
-
-            // Role-based restrictions
-            if (loggedInUserRole == "admin" && roleToUpdateName != "employee")
-            {
-                throw new UnauthorizedAccessException("Admins can only update Employee accounts.");
-            }
-
-            if (loggedInUserRole != "superadmin" && loggedInUserRole != "admin")
-            {
-                throw new UnauthorizedAccessException("You do not have permission to update users.");
-            }
 
             // Update fields
-            systemuser.Username = systemUserDto.Username;
-            systemuser.Password = BCrypt.Net.BCrypt.HashPassword(systemUserDto.Password);
-            systemuser.RoleId = systemUserDto.RoleId;
+            systemuser.Username = systemUserEditDto.Username;
+            //systemuser.Password = BCrypt.Net.BCrypt.HashPassword(systemUserDto.Password);
+            systemuser.RoleId = systemUserEditDto.RoleId;
 
             _context.SystemUsers.Update(systemuser);
             await _context.SaveChangesAsync();

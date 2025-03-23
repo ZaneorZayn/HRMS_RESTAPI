@@ -6,9 +6,9 @@ namespace hrms_api.Repository.SystemUserRepository
     public interface ISystemUserRepository
     {
         Task<SystemUser> GetByIdAsync(int id);
-        Task<List<SystemUser>> GetAllAsync();
-        Task AddAsync(SystemUserDto systemUserDto);
-        Task UpdateAsync(int id ,SystemUserDto systemUserDto);
+        Task<List<SystemUserGetDto>> GetAllAsync();
+        Task AddAsync(SystemUserCreateDto systemUserCreateDto);
+        Task UpdateAsync(int id ,SystemUserEditDto systemUserEditDto);
         Task DeleteAsync(int id);
 
     }
