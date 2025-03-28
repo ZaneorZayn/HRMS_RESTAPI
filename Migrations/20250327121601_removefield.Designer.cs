@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using hrms_api.Data;
 
@@ -11,9 +12,11 @@ using hrms_api.Data;
 namespace hrms_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250327121601_removefield")]
+    partial class removefield
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,83 +180,104 @@ namespace hrms_api.Migrations
 
             modelBuilder.Entity("hrms_api.Model.RolePermission", b =>
                 {
-                    b.Property<int>("RoleId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("PermissionId")
                         .HasColumnType("int");
 
-                    b.HasKey("RoleId", "PermissionId");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("PermissionId");
+
+                    b.HasIndex("RoleId");
 
                     b.ToTable("RolePermissions");
 
                     b.HasData(
                         new
                         {
-                            RoleId = 1,
-                            PermissionId = 1
+                            Id = 1,
+                            PermissionId = 1,
+                            RoleId = 1
                         },
                         new
                         {
-                            RoleId = 1,
-                            PermissionId = 2
+                            Id = 2,
+                            PermissionId = 2,
+                            RoleId = 1
                         },
                         new
                         {
-                            RoleId = 1,
-                            PermissionId = 3
+                            Id = 3,
+                            PermissionId = 3,
+                            RoleId = 1
                         },
                         new
                         {
-                            RoleId = 1,
-                            PermissionId = 4
+                            Id = 4,
+                            PermissionId = 4,
+                            RoleId = 1
                         },
                         new
                         {
-                            RoleId = 1,
-                            PermissionId = 5
+                            Id = 5,
+                            PermissionId = 5,
+                            RoleId = 1
                         },
                         new
                         {
-                            RoleId = 1,
-                            PermissionId = 6
+                            Id = 6,
+                            PermissionId = 6,
+                            RoleId = 1
                         },
                         new
                         {
-                            RoleId = 1,
-                            PermissionId = 7
+                            Id = 7,
+                            PermissionId = 7,
+                            RoleId = 1
                         },
                         new
                         {
-                            RoleId = 2,
-                            PermissionId = 1
+                            Id = 8,
+                            PermissionId = 1,
+                            RoleId = 2
                         },
                         new
                         {
-                            RoleId = 2,
-                            PermissionId = 2
+                            Id = 9,
+                            PermissionId = 2,
+                            RoleId = 2
                         },
                         new
                         {
-                            RoleId = 2,
-                            PermissionId = 5
+                            Id = 10,
+                            PermissionId = 5,
+                            RoleId = 2
                         },
                         new
                         {
-                            RoleId = 2,
-                            PermissionId = 6
+                            Id = 11,
+                            PermissionId = 6,
+                            RoleId = 2
                         },
                         new
                         {
-                            RoleId = 3,
-                            PermissionId = 1
+                            Id = 12,
+                            PermissionId = 1,
+                            RoleId = 3
                         },
                         new
                         {
-                            RoleId = 3,
-                            PermissionId = 6
+                            Id = 13,
+                            PermissionId = 6,
+                            RoleId = 3
                         });
                 });
 
@@ -286,7 +310,7 @@ namespace hrms_api.Migrations
                         new
                         {
                             Id = 1,
-                            Password = "$2a$10$geQg98T03ye3iD9Km0KAQuQawA7G1O8wPuNlJepQrV12Fl.jYPHQm",
+                            Password = "$2a$10$4s1VXK4bzsMIZ5Uazr2M/eG8UDWhna1/FrTpbAA8aJMEUXbIQSxwi",
                             RoleId = 1,
                             Username = "superadmin"
                         });

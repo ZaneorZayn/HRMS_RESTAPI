@@ -66,7 +66,11 @@ namespace hrms_api.Repository.AuthRepository
 
         public async Task<LoginResponeDto> LoginAsync(LoginRequest loginRequest)
         {
-            var user = await _context.SystemUsers.Include(x => x.Role).FirstOrDefaultAsync(x => x.Username == loginRequest.Username);
+            var user = await _context.SystemUsers.
+                Include(x => x.Role).
+                Include(x => x.Role.RolePermissions).
+                ThenInclude(rp => rp.Permission).
+                FirstOrDefaultAsync(x => x.Username == loginRequest.Username);
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
             {
                 throw new Exception("Invalid username or password");
@@ -76,20 +80,24 @@ namespace hrms_api.Repository.AuthRepository
             {
                 throw new Exception("User role not found.");
             }
-
+            var permissions = user.Role.RolePermissions.Select(x => x.Permission.PermissionName).ToList();
             // Generate token 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
             var expiration = DateTime.UtcNow.AddHours(2);
 
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role.Name)
+
+            };
+            //add permission claims
+            claims.AddRange(permissions.Select(permission => new Claim("Permission", permission!)));
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, user.Role.Name)
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = expiration,
                 Issuer = _configuration["Jwt:Issuer"],  // Add issuer
                 Audience = _configuration["Jwt:Audience"], // Add audience

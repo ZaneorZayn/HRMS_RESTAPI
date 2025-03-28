@@ -22,7 +22,7 @@ namespace hrms_api.Controllers.EmployeeController
             _employeerepo = employeerepo;
         }
 
-        [CustomAuthorize("Admin","SuperAdmin")]
+        [CustomPermissionAuthorize("View Employee")]
         [HttpGet]
         public async Task<IActionResult> GetAllEmployee()
         {
@@ -38,7 +38,7 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
        
-        [CustomAuthorize("Admin","SuperAdmin")]
+        [CustomPermissionAuthorize("View Employee")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEmployeeById(int id)
         {
@@ -57,7 +57,7 @@ namespace hrms_api.Controllers.EmployeeController
         }
         
         
-       [CustomAuthorize("Admin","SuperAdmin")]
+       [CustomPermissionAuthorize("View Employee")]
         [HttpPost]
         public async Task<IActionResult> AddEmployee([FromForm] CreateEmployeeDto createEmployeeDto)
         {
@@ -77,7 +77,7 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
 
-       [CustomAuthorize("Admin", "SuperAdmin")]
+       [CustomPermissionAuthorize("Delete Employee")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployee(int id)
         {
@@ -98,7 +98,7 @@ namespace hrms_api.Controllers.EmployeeController
         }
         
         
-        [CustomAuthorize("Admin","SuperAdmin")]
+        [CustomPermissionAuthorize("Edit Employee")]
         [HttpPut("{id}")]
         public async Task<IActionResult> EditEmployee(int id, [FromForm] UpdateEmployeeDto updateEmployeeDto)
         {
@@ -120,8 +120,8 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
        
-        [CustomAuthorize("Admin","SuperAdmin")]
-        [HttpPost("{employeeId}/link-systemuser/{systemUserId}")]
+        [CustomPermissionAuthorize("Edit Employee")]
+        [HttpPost("{employeeId}/link-systemUser/{systemUserId}")]
         public async Task<IActionResult> LinkSystemUser(int employeeId, int systemUserId)
         {
             try
@@ -141,14 +141,15 @@ namespace hrms_api.Controllers.EmployeeController
             }
         }
 
-        [CustomAuthorize("Admin","SuperAdmin")]
-        [HttpPost("{employeeId}/unlink-systemuser")]
+       [CustomPermissionAuthorize("Edit Employee")]
+        [HttpPost("{employeeId}/unlink-systemUser")]
         public async Task<IActionResult> UnlinkSystemUser(int employeeId)
         {
             try
             {
                 await _employeerepo.UnlinkSystemUserAsync(employeeId);
-                return StatusCode(
+                return StatusCode( 
+                    
                     StatusCodes.Status200OK, new
                     {
                         message = "Successfully unlinked employee.",

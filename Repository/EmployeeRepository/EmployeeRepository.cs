@@ -29,8 +29,6 @@ namespace hrms_api.Repository.EmployeeRepository
         }
         public async Task AddAsync(CreateEmployeeDto createEmployeeDto)
         {
-
-           
             var httpContext = _httpContextAccessor.HttpContext;
             var baseurl = $"{httpContext!.Request.Scheme}://{httpContext.Request.Host}";
             string? imagePath = null;
