@@ -17,15 +17,14 @@ namespace hrms_api.Controllers.SystemUserController
         {
             _systemuserrepo = systemuserrepo;
         }
-        [CustomAuthorize("Admin","SuperAdmin")]
+        
         [HttpGet]
-
         public async Task<IActionResult> GetAllSystemUser()
         {
             try
             {
-                var systemuser = await _systemuserrepo.GetAllAsync();
-                return Ok(systemuser);
+                var systemUser = await _systemuserrepo.GetAllAsync();
+                return Ok(systemUser);
             }
             catch (Exception ex)
             {

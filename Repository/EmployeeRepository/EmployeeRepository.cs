@@ -61,6 +61,7 @@ namespace hrms_api.Repository.EmployeeRepository
             {
                 Name = createEmployeeDto.Name,
                 Email = createEmployeeDto.Email,
+                Gender = createEmployeeDto.Gender,
                 HiredDate = createEmployeeDto.HiredDate,
                 DOB = createEmployeeDto.DOB,
                 Address = createEmployeeDto.Address,

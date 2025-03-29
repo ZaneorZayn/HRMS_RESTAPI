@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using hrms_api.Filter;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace hrms_api.Controllers.EmployeeController
 {
@@ -102,6 +103,7 @@ namespace hrms_api.Controllers.EmployeeController
         [HttpPut("{id}")]
         public async Task<IActionResult> EditEmployee(int id, [FromForm] UpdateEmployeeDto updateEmployeeDto)
         {
+            
             try
             {
                 await _employeerepo.UpdateAsync(id, updateEmployeeDto);

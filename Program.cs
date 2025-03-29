@@ -12,6 +12,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using DotNetEnv;
+using hrms_api.Helper;
+using hrms_api.Repository.PermissionRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,7 +36,7 @@ if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Database connection string is missing. Ensure it is set in the .env file.");
 }
 
-// Override the appsettings.json connection string with the .env value
+// Override the appSettings.json connection string with the .env value
 builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
 // Add services to the container.
 
@@ -45,12 +47,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<JwtService>();
 builder.Services.AddScoped<ISystemUserRepository, SystemUserRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPermissionRepository,PermissionRepository>();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo

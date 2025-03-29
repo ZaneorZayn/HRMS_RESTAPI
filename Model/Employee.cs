@@ -1,15 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using hrms_api.Enum;
 
 namespace hrms_api.Model
 {
     public class Employee
     {
         public int Id { get; set; }
-
+        
         public string? Name { get; set; }
 
         public string? Email { get; set; }
+        
+        public Gender Gender { get; set; }
 
         public DateTime DOB { get; set; }
 

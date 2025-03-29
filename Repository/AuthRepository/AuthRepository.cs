@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using hrms_api.Dto.AuthenticationDto;
+using hrms_api.Helper;
 using hrms_api.Repository.EmailRepository;
 using hrms_api.Repository.UserContext;
 
@@ -16,14 +17,14 @@ namespace hrms_api.Repository.AuthRepository
     {
 
         private readonly AppDbContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly JwtService _jwtService;
         private readonly IUserContext _userContext;
         private readonly IEmailService _emailService;
 
-        public AuthRepository(AppDbContext context, IConfiguration configuration, IUserContext userContext , IEmailService emailService)
+        public AuthRepository(AppDbContext context, IConfiguration configuration, IUserContext userContext , IEmailService emailService, JwtService jwtService)
         {
             _context = context;
-            _configuration = configuration;
+            _jwtService = jwtService;
             _userContext = userContext;
             _emailService = emailService;
         }
@@ -68,7 +69,7 @@ namespace hrms_api.Repository.AuthRepository
         {
             var user = await _context.SystemUsers.
                 Include(x => x.Role).
-                Include(x => x.Role.RolePermissions).
+                Include(x => x.Role!.RolePermissions).
                 ThenInclude(rp => rp.Permission).
                 FirstOrDefaultAsync(x => x.Username == loginRequest.Username);
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
@@ -80,37 +81,13 @@ namespace hrms_api.Repository.AuthRepository
             {
                 throw new Exception("User role not found.");
             }
-            var permissions = user.Role.RolePermissions.Select(x => x.Permission.PermissionName).ToList();
-            // Generate token 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
-            var expiration = DateTime.UtcNow.AddHours(2);
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role.Name)
-
-            };
-            //add permission claims
-            claims.AddRange(permissions.Select(permission => new Claim("Permission", permission!)));
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = expiration,
-                Issuer = _configuration["Jwt:Issuer"],  // Add issuer
-                Audience = _configuration["Jwt:Audience"], // Add audience
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
-
+            var permissions = user.Role.RolePermissions.Select(x => x.Permission!.PermissionName).ToList();
+            var tokenString = _jwtService.GenerateToken(user, permissions!);
             return new LoginResponeDto
             {
-                Token = tokenString,
-                Expiration = expiration,
+               TokenType = "Bearer",
+               Token = tokenString,
+               Expiration = DateTime.UtcNow.AddMinutes(1),
             };
         }
 
@@ -164,7 +141,7 @@ namespace hrms_api.Repository.AuthRepository
                     ImageUrl = e.ImageUrl!,
                     SystemUserId = e.SystemUserId ?? 0,
                     Username = e.SystemUser!.Username,
-                    Role = e.SystemUser.Role.Name
+                    Role = e.SystemUser.Role!.Name
                 })
                 .FirstOrDefaultAsync();
 
@@ -176,7 +153,7 @@ namespace hrms_api.Repository.AuthRepository
                 {
                     SystemUserId = su.Id,
                     Username = su.Username,
-                    Role = su.Role.Name
+                    Role = su.Role!.Name
                 })
                 .FirstOrDefaultAsync();
 
@@ -219,7 +196,7 @@ namespace hrms_api.Repository.AuthRepository
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(editProfileDto.Image.FileName)}";
                 var filePath = Path.Combine(uploadFolder, fileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                await using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await editProfileDto.Image.CopyToAsync(stream);
                 }
