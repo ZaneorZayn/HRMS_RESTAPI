@@ -18,6 +18,7 @@ namespace hrms_api.Controllers.SystemUserController
             _systemuserrepo = systemuserrepo;
         }
         
+        [CustomPermissionAuthorize("View SystemUser")]
         [HttpGet]
         public async Task<IActionResult> GetAllSystemUser()
         {
@@ -32,7 +33,8 @@ namespace hrms_api.Controllers.SystemUserController
                 return BadRequest(ex.Message);
             }
         }
-        [CustomAuthorize("Admin","SuperAdmin")]
+        
+        [CustomPermissionAuthorize("View SystemUser")]
         [HttpGet("{id}")]
 
         public async Task<IActionResult> GetSystemUserById(int id)
@@ -52,7 +54,7 @@ namespace hrms_api.Controllers.SystemUserController
                 return BadRequest(ex.Message);
             }
         }
-        [CustomAuthorize("Admin","SuperAdmin")]
+        [CustomPermissionAuthorize("Create SystemUser")]
         [HttpPost]
         public async Task<IActionResult> AddSystemUser (SystemUserCreateDto systemUserCreateDto)
         {
@@ -72,8 +74,8 @@ namespace hrms_api.Controllers.SystemUserController
                 return BadRequest(new {message = ex.Message});
             }
         }
-
-        [CustomAuthorize("Admin","SuperAdmin")]
+        
+        [CustomPermissionAuthorize("Update SystemUser")]
         [HttpPut("{id}")]
 
         public async Task<IActionResult> EditSystemUser(int id ,SystemUserEditDto systemUserEditDto)
@@ -93,7 +95,8 @@ namespace hrms_api.Controllers.SystemUserController
                 return BadRequest(ex.Message);
             }
         }
-        [CustomAuthorize("Admin","SuperAdmin")]
+        
+        [CustomPermissionAuthorize("Delete SystemUser")]
         [HttpDelete("{id}")]
 
         public async Task<IActionResult> DeleteSystemUser(int id)
