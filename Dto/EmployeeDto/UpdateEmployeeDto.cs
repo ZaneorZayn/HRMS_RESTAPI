@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using hrms_api.Enum;
 
 namespace hrms_api.Dto;
 
@@ -11,6 +12,9 @@ public class UpdateEmployeeDto
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Invalid Email Address")]
     public string? Email { get; set; }
+    
+    [Required(ErrorMessage = "Gender is required")]
+    public Gender Gender { get; set; }
 
     [Required(ErrorMessage = "Address is required")]
     [DataType(DataType.Date)]

@@ -18,7 +18,7 @@ namespace hrms_api.Controllers.SystemUserController
             _systemuserrepo = systemuserrepo;
         }
         
-        [CustomPermissionAuthorize("View SystemUser")]
+        //[CustomPermissionAuthorize("View SystemUser")]
         [HttpGet]
         public async Task<IActionResult> GetAllSystemUser()
         {

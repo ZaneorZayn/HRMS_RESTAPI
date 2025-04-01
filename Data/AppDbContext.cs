@@ -17,6 +17,8 @@ namespace hrms_api.Data
         public DbSet<RolePermission> RolePermissions { get; set; }
 
         public DbSet<OtpRequest> OtpRequests { get; set; }
+        
+        public DbSet<Attendance> Attendances { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

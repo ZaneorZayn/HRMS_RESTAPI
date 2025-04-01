@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using hrms_api.Data;
 
@@ -11,9 +12,11 @@ using hrms_api.Data;
 namespace hrms_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250330073115_attendancetable")]
+    partial class attendancetable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -330,7 +333,7 @@ namespace hrms_api.Migrations
                         new
                         {
                             Id = 1,
-                            Password = "$2a$10$XL/WW77q.gbgGlVP8dBUAehTCU1c0W.KSxlVsamChvQRc3yCw7mrq",
+                            Password = "$2a$10$0caAzztlGVaUB8e3CAPqKO7p/JBckEtaVb.IZDbiLzjbvZwq1Rvp2",
                             RoleId = 1,
                             Username = "superadmin"
                         });

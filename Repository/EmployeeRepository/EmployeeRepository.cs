@@ -176,6 +176,7 @@ namespace hrms_api.Repository.EmployeeRepository
             // Update employee details
             employee.Name = updateEmployeeDto.Name;
             employee.Email = updateEmployeeDto.Email;
+            employee.Gender = updateEmployeeDto.Gender;
             employee.Address = updateEmployeeDto.Address;
             employee.DOB = updateEmployeeDto.DOB;
             employee.HiredDate = updateEmployeeDto.HiredDate;

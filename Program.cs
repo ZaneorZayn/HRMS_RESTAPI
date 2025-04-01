@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using DotNetEnv;
 using hrms_api.Helper;
+using hrms_api.Repository.AttendanceRepository;
 using hrms_api.Repository.PermissionRepository;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,7 +55,9 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped<IPermissionRepository,PermissionRepository>();
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
