@@ -5,6 +5,7 @@ using hrms_api.Repository.EmailRepository;
 using hrms_api.Repository.UserContext;
 using Microsoft.EntityFrameworkCore;
 using hrms_api.Helper;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 
 namespace hrms_api.Repository.EmployeeRepository
@@ -29,32 +30,14 @@ namespace hrms_api.Repository.EmployeeRepository
         }
         public async Task AddAsync(CreateEmployeeDto createEmployeeDto)
         {
-            var httpContext = _httpContextAccessor.HttpContext;
-            var baseurl = $"{httpContext!.Request.Scheme}://{httpContext.Request.Host}";
-            string? imagePath = null;
-            if (createEmployeeDto.ImageFile != null)
+            string? imagePath = createEmployeeDto.ImageUrl;
+
+            // If image URL not provided, generate avatar
+            if (string.IsNullOrEmpty(imagePath))
             {
-                var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot" ,"Uploads");
-
-                if (!Directory.Exists(uploadFolder))
-                {
-                    Directory.CreateDirectory(uploadFolder);
-                }
-                
-                var uniqueFilename = $"{Guid.NewGuid()}_{createEmployeeDto.ImageFile.FileName}";
-                var filePath = Path.Combine(uploadFolder, uniqueFilename);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await createEmployeeDto.ImageFile.CopyToAsync(stream);
-                }
-
-                
-                imagePath = $"{baseurl}/Uploads/{uniqueFilename}";     
-            }
-            else
-            {
-                imagePath = Helper.AvatarGenerator.GenerateAvatar(createEmployeeDto.Name! , baseurl);
+                var httpContext = _httpContextAccessor.HttpContext;
+                var baseurl = $"{httpContext!.Request.Scheme}://{httpContext.Request.Host}";
+                imagePath = Helper.AvatarGenerator.GenerateAvatar(createEmployeeDto.Name!, baseurl);
             }
 
             var employee = new Employee
@@ -68,9 +51,9 @@ namespace hrms_api.Repository.EmployeeRepository
                 PhoneNumber = createEmployeeDto.PhoneNumber,
                 ImageUrl = imagePath
             };
+
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
-
         }
         
         public async Task DeleteAsync(int id)
@@ -100,9 +83,35 @@ namespace hrms_api.Repository.EmployeeRepository
         }
 
 
-        public async Task<List<Employee>> GetAllAsync()
+        public async Task<PagedResult<Employee>> GetAllAsync(QueryParameters parameters)
         {
-            return await _context.Employees.ToListAsync();
+            var query = _context.Employees.AsQueryable();
+
+            if (!string.IsNullOrEmpty(parameters.Search))
+            {
+                string search = parameters.Search.ToLower();
+                query = query.Where(e => e.Name!.Contains(search) || e.Email!.Contains(search));
+            }
+
+            if (!string.IsNullOrEmpty(parameters.SortBy))
+            {
+                query = parameters.SortOrder.ToLower() == "desc" 
+                    ? query.OrderByDescending(q => q.Name)
+                    : query.OrderBy(q => q.Name);
+            }
+            
+            var totalCount = await query.CountAsync();
+            
+            var items = await query.Skip((parameters.PageNumber - 1) * parameters.PageSize).Take(parameters.PageSize).ToListAsync();
+
+            return new PagedResult<Employee>
+            {
+                Data = items,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                TotalItem = totalCount == 0 ? 0 : totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)parameters.PageSize),
+            };
         }
 
         public async Task<Employee> GetByIdAsync(int id)
@@ -126,12 +135,9 @@ namespace hrms_api.Repository.EmployeeRepository
             if (employee == null && user == null)
                 throw new Exception("Employee and SystemUser are both not found!");
 
-            if (employee == null)
-                throw new Exception("Employee not found");
-
-            if (user == null)
-                throw new Exception("SystemUser not found");
-
+            if (employee == null || user == null)
+                throw new Exception("Employee or SystemUser not found");
+            
             if (employee.SystemUserId != null)
                 throw new Exception("Employee is already linked to a SystemUser");
 
@@ -154,7 +160,7 @@ namespace hrms_api.Repository.EmployeeRepository
 
             var emailRequest = new EmailDto
             {
-                ToEmail = employee.Email,
+                ToEmail = employee.Email!,
                 Subject = emailSubject,
                 Body = emailBody
             };
@@ -181,39 +187,8 @@ namespace hrms_api.Repository.EmployeeRepository
             employee.DOB = updateEmployeeDto.DOB;
             employee.HiredDate = updateEmployeeDto.HiredDate;
             employee.PhoneNumber = updateEmployeeDto.PhoneNumber;
-
-            // Handle Image Upload
-            if (updateEmployeeDto.ImageFile != null)
-            {
-                var uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Uploads");
-
-                if (!Directory.Exists(uploadFolder))
-                {
-                    Directory.CreateDirectory(uploadFolder);
-                }
-
-                // Delete old image if exists
-                if (!string.IsNullOrEmpty(employee.ImageUrl))
-                {
-                    var oldPathImage = Path.Combine(_webHostEnvironment.WebRootPath, employee.ImageUrl.TrimStart('/'));
-                    if (System.IO.File.Exists(oldPathImage))
-                    {
-                        System.IO.File.Delete(oldPathImage);
-                    }
-                }
-
-                // Save new image
-                var uniqueFileName = $"{Guid.NewGuid()}_{updateEmployeeDto.ImageFile.FileName}";
-                var filePath = Path.Combine(uploadFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await updateEmployeeDto.ImageFile.CopyToAsync(fileStream);
-                }
-
-                employee.ImageUrl = $"/Uploads/{uniqueFileName}";
-            }
-
+            employee.ImageUrl = updateEmployeeDto.ImageUrl;
+            
             await _context.SaveChangesAsync();
         }
 
@@ -232,6 +207,33 @@ namespace hrms_api.Repository.EmployeeRepository
             await _context.SaveChangesAsync();
         }
 
-       
+        public async Task<string> UploadImage(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                throw new Exception("File is empty");
+            }
+
+            var httpContext = _httpContextAccessor.HttpContext;
+            var baseUrl = $"{httpContext!.Request.Scheme}://{httpContext.Request.Host.Value}";
+
+            var uploadFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Uploads");
+    
+            if (!Directory.Exists(uploadFolder))
+                Directory.CreateDirectory(uploadFolder);
+    
+            var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
+            var filePath = Path.Combine(uploadFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+    
+            var imageUrl = $"{baseUrl}/Uploads/{uniqueFileName}"; // Full URL
+
+            return imageUrl;
+        }
+
     }
 }

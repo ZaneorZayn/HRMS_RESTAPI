@@ -44,6 +44,21 @@ namespace hrms_api.Controllers.AuthController
             }
         }
 
+        [HttpPost("refresh-token")]
+
+        public async Task<IActionResult> RefreshToken( [FromQuery]string refreshToken)
+        {
+            try
+            {
+              var result  = await _authRepository.GetRefreshToken(refreshToken);
+              return Ok(new {message = "Success"  ,data=result});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("request-otp")]
         public async Task<IActionResult> RequestOtp([FromBody] RequestOtpDto request)
         {
@@ -109,7 +124,7 @@ namespace hrms_api.Controllers.AuthController
         {
             try
             {
-               
+                
                 var editProfile = await _authRepository.EditProfile( editProfileDto);
                 
                 return Ok(new { message = " Update profile successfully", data = editProfile });

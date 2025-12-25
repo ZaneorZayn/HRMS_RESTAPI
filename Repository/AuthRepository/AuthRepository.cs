@@ -83,11 +83,26 @@ namespace hrms_api.Repository.AuthRepository
             }
             var permissions = user.Role.RolePermissions.Select(x => x.Permission!.PermissionName).ToList();
             var tokenString = _jwtService.GenerateToken(user, permissions!);
+
+            var refreshToken = _jwtService.GenerateRefeshToken();
+
+            var refreshTokenEntity = new RefreshToken
+            {
+                refreshToken = refreshToken,
+                expires = DateTime.UtcNow.AddDays(7),
+                systemuserId = user.Id,
+
+            }; 
+            
+            await _context.RefreshTokens.AddAsync(refreshTokenEntity);
+            await _context.SaveChangesAsync();
+            
             return new LoginResponeDto
             {
                TokenType = "Bearer",
                Token = tokenString,
-               Expiration = DateTime.UtcNow.AddMinutes(1),
+               Expiration = DateTime.UtcNow.AddMinutes(30),
+               RefreshToken = refreshToken,
             };
         }
 
@@ -105,7 +120,7 @@ namespace hrms_api.Repository.AuthRepository
             {
                 throw new Exception("Invalid OTP or OTP expired");
             }
-
+  
             var employee = await _context.Employees
                 .Include(e => e.SystemUser)//Include systemuser
                 .FirstOrDefaultAsync(e => e.Email == otpRequest.email);
@@ -182,32 +197,56 @@ namespace hrms_api.Repository.AuthRepository
             employee.Address = editProfileDto.Address;
             employee.DOB = editProfileDto.DOB;
             employee.PhoneNumber = editProfileDto.PhoneNumber;
+            employee.ImageUrl = editProfileDto.Image;
             
-            if (editProfileDto.Image != null)
-            {
-                var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Upload");
-
-                // Ensure the directory exists
-                if (!Directory.Exists(uploadFolder))
-                {
-                    Directory.CreateDirectory(uploadFolder);
-                }
-
-                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(editProfileDto.Image.FileName)}";
-                var filePath = Path.Combine(uploadFolder, fileName);
-
-                await using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await editProfileDto.Image.CopyToAsync(stream);
-                }
-
-                // Update employee image URL
-                employee.ImageUrl = $"/upload/{fileName}"; // Use correct URL path
-            }
-
             _context.Update(employee);
             await _context.SaveChangesAsync();
             return editProfileDto;
+        }
+
+        public async Task<RefreshTokenDto> GetRefreshToken(string refreshToken)
+        {
+            var tokenStore = await _context.RefreshTokens.
+                Include(rt => rt.systemUser).
+                ThenInclude(r => r.Role).
+                ThenInclude(rp => rp.RolePermissions).
+                ThenInclude( pt => pt.Permission).
+                FirstOrDefaultAsync(rt => rt.refreshToken == refreshToken);
+
+            if (tokenStore == null || tokenStore.expires < DateTime.UtcNow)
+            {
+                throw new Exception("Invalid refresh token");
+            }
+            
+            var user  = tokenStore.systemUser;
+
+            if (user == null || user.Role == null)
+            {
+                throw new Exception("User not found ");
+            }
+            var permissions = user.Role.RolePermissions
+                .Select(rp => rp.Permission!.PermissionName)
+                .ToList();
+
+            // Generate new access token
+            var newAccessToken = _jwtService.GenerateToken(user, permissions);
+
+            // Rotate refresh token (optional but recommended)
+            var newRefreshToken = _jwtService.GenerateRefeshToken();
+            tokenStore.refreshToken = newRefreshToken;
+            
+            tokenStore.expires = DateTime.UtcNow.AddDays(7);
+
+            await _context.SaveChangesAsync();
+
+            return new RefreshTokenDto()
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = tokenStore.refreshToken,
+                Expiration = tokenStore.expires,
+                TokenType = "Bearer",
+                
+            };
         }
 
         public Task ValidateOtpAsync(string email, string otp)

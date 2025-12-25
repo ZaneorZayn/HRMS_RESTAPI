@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using hrms_api.Model;
 using Microsoft.IdentityModel.Tokens;
@@ -19,7 +20,7 @@ public class JwtService
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
-        var expiration = DateTime.UtcNow.AddHours(2);
+        var expiration = DateTime.UtcNow.AddMinutes(1);
 
         var claims = new List<Claim>
         {
@@ -42,4 +43,12 @@ public class JwtService
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
+
+    public string GenerateRefeshToken()
+    {
+        var randomNumber = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
     }
+}

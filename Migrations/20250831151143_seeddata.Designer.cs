@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using hrms_api.Data;
 
@@ -11,9 +12,11 @@ using hrms_api.Data;
 namespace hrms_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250831151143_seeddata")]
+    partial class seeddata
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -256,69 +259,6 @@ namespace hrms_api.Migrations
                             Name = "Ava Thomas",
                             PhoneNumber = "7778889999"
                         });
-                });
-
-            modelBuilder.Entity("hrms_api.Model.LeaveRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ApprovedById")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LeaveSession")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LeaveStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LeaveType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<int?>("RejectedById")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("RejectedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<DateTime?>("RequestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApprovedById");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("RejectedById");
-
-                    b.ToTable("LeaveRequests");
                 });
 
             modelBuilder.Entity("hrms_api.Model.OtpRequest", b =>
@@ -587,7 +527,7 @@ namespace hrms_api.Migrations
                         new
                         {
                             Id = 1,
-                            Password = "$2a$10$DQ2nLzy0YvRoaeuV6KaFoOmMrqJa5M6Y6KIGAuGORH5392GNFy3Ny",
+                            Password = "$2a$10$5jfPN0nuIXBNlOgfZB6XkuiWuDONmeXN1lxNMVm3tD.xK5JvPxixW",
                             RoleId = 1,
                             Username = "superadmin"
                         });
@@ -643,30 +583,6 @@ namespace hrms_api.Migrations
                     b.Navigation("Position");
 
                     b.Navigation("SystemUser");
-                });
-
-            modelBuilder.Entity("hrms_api.Model.LeaveRequest", b =>
-                {
-                    b.HasOne("hrms_api.Model.Employee", "ApprovedBy")
-                        .WithMany()
-                        .HasForeignKey("ApprovedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("hrms_api.Model.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("hrms_api.Model.Employee", "RejectedBy")
-                        .WithMany()
-                        .HasForeignKey("RejectedById");
-
-                    b.Navigation("ApprovedBy");
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("RejectedBy");
                 });
 
             modelBuilder.Entity("hrms_api.Model.RefreshToken", b =>

@@ -32,7 +32,7 @@ public class UpdateEmployeeDto
     [MaxLength(255, ErrorMessage = "Address can be longer than 255 characters ")]
     public string? PhoneNumber { get; set; }
     
-    public IFormFile? ImageFile { get; set; }
+    public string? ImageUrl{ get; set; }
 
 
 }

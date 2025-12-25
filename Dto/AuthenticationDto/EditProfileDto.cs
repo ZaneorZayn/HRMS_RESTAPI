@@ -7,5 +7,5 @@ public class EditProfileDto
     public string Address { get; set; } = string.Empty;
     public DateTime DOB { get; set; }
     public string PhoneNumber { get; set; } = string.Empty;
-    public IFormFile? Image { get; set; } // For uploading profile images
+    public string Image { get; set; } // For uploading profile images
 }

@@ -16,5 +16,6 @@ namespace hrms_api.Repository.AuthRepository
         Task ResetPassword(ResetPasswordDto resetPasswordDto);
         Task <ProfileDto> GetProfile(int systemUserId );
         Task <EditProfileDto> EditProfile( EditProfileDto editProfileDto);
+        Task <RefreshTokenDto> GetRefreshToken(string refreshToken);
     }
 }

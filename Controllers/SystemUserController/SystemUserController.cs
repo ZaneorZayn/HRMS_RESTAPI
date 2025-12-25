@@ -54,7 +54,7 @@ namespace hrms_api.Controllers.SystemUserController
                 return BadRequest(ex.Message);
             }
         }
-        [CustomPermissionAuthorize("Create SystemUser")]
+        //[CustomPermissionAuthorize("Create SystemUser")]
         [HttpPost]
         public async Task<IActionResult> AddSystemUser (SystemUserCreateDto systemUserCreateDto)
         {

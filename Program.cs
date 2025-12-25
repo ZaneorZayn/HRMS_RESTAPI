@@ -14,7 +14,9 @@ using System.Text;
 using DotNetEnv;
 using hrms_api.Helper;
 using hrms_api.Repository.AttendanceRepository;
+using hrms_api.Repository.LeaveRequestRepository;
 using hrms_api.Repository.PermissionRepository;
+using hrms_api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +46,15 @@ builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddControllers();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+
+
+builder.Services.AddScoped<QrCodeService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -57,6 +68,9 @@ builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped<IPermissionRepository,PermissionRepository>();
+builder.Services.AddScoped<ILeaveRequestRepository, LeaverRequestRepository>();
+
+
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -91,6 +105,17 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost5174",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5174") // Your Vue.js frontend
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        });
+});
 builder.Services.AddAuthentication(options =>
 {
 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -114,6 +139,7 @@ options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;}).
 
 var app = builder.Build();
 
+app.Urls.Add("http://0.0.0.0:5292");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -123,6 +149,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseCors("AllowLocalhost5174");
 app.UseAuthentication();
 app.UseAuthorization();
 

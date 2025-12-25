@@ -7,5 +7,7 @@ public interface IAttendanceRepository
 {
     Task MarkCheckInAsync(int systemUserId);
     Task MarkCheckOutAsync(int systemUserId);
-    Task<List<Attendance>> GetAttendancesByToday();
+    Task<List<AttendanceDto>> GetAttendancesByToday();
+    Task<string> ScanAttendanceAsync(AttendanceScanDto attendanceScanDto,int systemUserId);
+    Task <List<Attendance>> GetAttendanceUser(int systemUserId);
 }

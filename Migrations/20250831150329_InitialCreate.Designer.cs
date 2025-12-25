@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using hrms_api.Data;
 
@@ -11,9 +12,11 @@ using hrms_api.Data;
 namespace hrms_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250831150329_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -134,191 +137,6 @@ namespace hrms_api.Migrations
                     b.HasIndex("SystemUserId");
 
                     b.ToTable("Employees");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Address = "123 Main St",
-                            DOB = new DateTime(1990, 5, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "johndoe@example.com",
-                            Gender = 1,
-                            HiredDate = new DateTime(2020, 1, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/john.jpg",
-                            Name = "John Doe",
-                            PhoneNumber = "1234567890"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Address = "456 Oak St",
-                            DOB = new DateTime(1992, 8, 23, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "janesmith@example.com",
-                            Gender = 2,
-                            HiredDate = new DateTime(2021, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/jane.jpg",
-                            Name = "Jane Smith",
-                            PhoneNumber = "9876543210"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Address = "789 Pine St",
-                            DOB = new DateTime(1988, 2, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "michaeljohnson@example.com",
-                            Gender = 1,
-                            HiredDate = new DateTime(2019, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/michael.jpg",
-                            Name = "Michael Johnson",
-                            PhoneNumber = "5551234567"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Address = "101 Maple St",
-                            DOB = new DateTime(1995, 11, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "emilydavis@example.com",
-                            Gender = 2,
-                            HiredDate = new DateTime(2022, 2, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/emily.jpg",
-                            Name = "Emily Davis",
-                            PhoneNumber = "4449876543"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Address = "202 Birch St",
-                            DOB = new DateTime(1991, 4, 18, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "williambrown@example.com",
-                            Gender = 1,
-                            HiredDate = new DateTime(2020, 9, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/william.jpg",
-                            Name = "William Brown",
-                            PhoneNumber = "2223334444"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Address = "303 Cedar St",
-                            DOB = new DateTime(1993, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "sophiamiller@example.com",
-                            Gender = 2,
-                            HiredDate = new DateTime(2021, 5, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/sophia.jpg",
-                            Name = "Sophia Miller",
-                            PhoneNumber = "3334445555"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Address = "404 Elm St",
-                            DOB = new DateTime(1989, 12, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "jameswilson@example.com",
-                            Gender = 1,
-                            HiredDate = new DateTime(2018, 11, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/james.jpg",
-                            Name = "James Wilson",
-                            PhoneNumber = "1112223333"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Address = "505 Walnut St",
-                            DOB = new DateTime(1996, 1, 14, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "oliviamartinez@example.com",
-                            Gender = 2,
-                            HiredDate = new DateTime(2022, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/olivia.jpg",
-                            Name = "Olivia Martinez",
-                            PhoneNumber = "6667778888"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Address = "606 Willow St",
-                            DOB = new DateTime(1994, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "danielanderson@example.com",
-                            Gender = 1,
-                            HiredDate = new DateTime(2020, 4, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/daniel.jpg",
-                            Name = "Daniel Anderson",
-                            PhoneNumber = "9990001111"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Address = "707 Cherry St",
-                            DOB = new DateTime(1997, 9, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Email = "avathomas@example.com",
-                            Gender = 2,
-                            HiredDate = new DateTime(2023, 1, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            ImageUrl = "https://example.com/images/ava.jpg",
-                            Name = "Ava Thomas",
-                            PhoneNumber = "7778889999"
-                        });
-                });
-
-            modelBuilder.Entity("hrms_api.Model.LeaveRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ApprovedById")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ApprovedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LeaveSession")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LeaveStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LeaveType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<int?>("RejectedById")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("RejectedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<DateTime?>("RequestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApprovedById");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("RejectedById");
-
-                    b.ToTable("LeaveRequests");
                 });
 
             modelBuilder.Entity("hrms_api.Model.OtpRequest", b =>
@@ -587,7 +405,7 @@ namespace hrms_api.Migrations
                         new
                         {
                             Id = 1,
-                            Password = "$2a$10$DQ2nLzy0YvRoaeuV6KaFoOmMrqJa5M6Y6KIGAuGORH5392GNFy3Ny",
+                            Password = "$2a$10$4drBXMrwLw3.9xljusvH8Oh6rcXUAfwXNph7pKoBgVlCCo/HhrcLu",
                             RoleId = 1,
                             Username = "superadmin"
                         });
@@ -643,30 +461,6 @@ namespace hrms_api.Migrations
                     b.Navigation("Position");
 
                     b.Navigation("SystemUser");
-                });
-
-            modelBuilder.Entity("hrms_api.Model.LeaveRequest", b =>
-                {
-                    b.HasOne("hrms_api.Model.Employee", "ApprovedBy")
-                        .WithMany()
-                        .HasForeignKey("ApprovedById")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("hrms_api.Model.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("hrms_api.Model.Employee", "RejectedBy")
-                        .WithMany()
-                        .HasForeignKey("RejectedById");
-
-                    b.Navigation("ApprovedBy");
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("RejectedBy");
                 });
 
             modelBuilder.Entity("hrms_api.Model.RefreshToken", b =>

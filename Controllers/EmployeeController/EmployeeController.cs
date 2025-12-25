@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using hrms_api.Filter;
+using hrms_api.Helper;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace hrms_api.Controllers.EmployeeController
@@ -25,11 +26,11 @@ namespace hrms_api.Controllers.EmployeeController
 
         [CustomPermissionAuthorize("View Employee")]
         [HttpGet]
-        public async Task<IActionResult> GetAllEmployee()
+        public async Task<IActionResult> GetAllEmployee([FromQuery] QueryParameters queryParameters)
         {
             try
             {
-                var employee = await _employeerepo.GetAllAsync();
+                var employee = await _employeerepo.GetAllAsync(queryParameters);
                 return StatusCode(StatusCodes.Status200OK, employee);
             }
             catch (Exception ex)
@@ -58,9 +59,9 @@ namespace hrms_api.Controllers.EmployeeController
         }
         
         
-       [CustomPermissionAuthorize("View Employee")]
+       //[CustomPermissionAuthorize("View Employee")]
         [HttpPost]
-        public async Task<IActionResult> AddEmployee([FromForm] CreateEmployeeDto createEmployeeDto)
+        public async Task<IActionResult> AddEmployee([FromBody] CreateEmployeeDto createEmployeeDto)
         {
             try
             {   
@@ -101,7 +102,7 @@ namespace hrms_api.Controllers.EmployeeController
         
         [CustomPermissionAuthorize("Edit Employee")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditEmployee(int id, [FromForm] UpdateEmployeeDto updateEmployeeDto)
+        public async Task<IActionResult> EditEmployee(int id, [FromBody] UpdateEmployeeDto updateEmployeeDto)
         {
             
             try
@@ -157,6 +158,22 @@ namespace hrms_api.Controllers.EmployeeController
                         message = "Successfully unlinked employee.",
                     }
                 );
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("upload-image")]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            try
+            {
+                var imageUrl = await _employeerepo.UploadImage(file);
+                // Return the full URL
+                
+                return Ok(new { imageUrl });
             }
             catch (Exception ex)
             {

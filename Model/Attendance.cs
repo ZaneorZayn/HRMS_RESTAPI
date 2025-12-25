@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using hrms_api.Enum;
 
 namespace hrms_api.Model;
@@ -15,6 +16,8 @@ public class Attendance
     public TimeSpan TotalHours { get; set; }
     public TimeSpan OverTime { get; set; }
     public AttendanceStatus Status { get; set; }
+    [JsonIgnore]
     public SystemUser? SystemUser { get; set; }
+    [JsonIgnore]
     public Employee? Employee { get; set; }
 }

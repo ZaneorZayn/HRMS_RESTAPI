@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using hrms_api.Data;
 
@@ -11,9 +12,11 @@ using hrms_api.Data;
 namespace hrms_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250902080902_AddLeaveRejectionColumns")]
+    partial class AddLeaveRejectionColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -301,6 +304,7 @@ namespace hrms_api.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("RejectionReason")
+                        .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
@@ -587,7 +591,7 @@ namespace hrms_api.Migrations
                         new
                         {
                             Id = 1,
-                            Password = "$2a$10$DQ2nLzy0YvRoaeuV6KaFoOmMrqJa5M6Y6KIGAuGORH5392GNFy3Ny",
+                            Password = "$2a$10$Qmhy6scjAan5t18oq875ae0W0.Vi5NHwNg/HqLm9PHXeWg/XYkAlS",
                             RoleId = 1,
                             Username = "superadmin"
                         });

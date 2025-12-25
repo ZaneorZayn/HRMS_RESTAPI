@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using hrms_api.Data;
 
@@ -11,9 +12,11 @@ using hrms_api.Data;
 namespace hrms_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250902030608_ConvertEnumToString")]
+    partial class ConvertEnumToString
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -294,16 +297,6 @@ namespace hrms_api.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<int?>("RejectedById")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("RejectedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
                     b.Property<DateTime?>("RequestDate")
                         .HasColumnType("datetime2");
 
@@ -315,8 +308,6 @@ namespace hrms_api.Migrations
                     b.HasIndex("ApprovedById");
 
                     b.HasIndex("EmployeeId");
-
-                    b.HasIndex("RejectedById");
 
                     b.ToTable("LeaveRequests");
                 });
@@ -587,7 +578,7 @@ namespace hrms_api.Migrations
                         new
                         {
                             Id = 1,
-                            Password = "$2a$10$DQ2nLzy0YvRoaeuV6KaFoOmMrqJa5M6Y6KIGAuGORH5392GNFy3Ny",
+                            Password = "$2a$10$OR3LnUH8BTAFeo447wzcPuVADWIlKgePOcpdh4Vm8mr/LsS75WlM6",
                             RoleId = 1,
                             Username = "superadmin"
                         });
@@ -658,15 +649,9 @@ namespace hrms_api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("hrms_api.Model.Employee", "RejectedBy")
-                        .WithMany()
-                        .HasForeignKey("RejectedById");
-
                     b.Navigation("ApprovedBy");
 
                     b.Navigation("Employee");
-
-                    b.Navigation("RejectedBy");
                 });
 
             modelBuilder.Entity("hrms_api.Model.RefreshToken", b =>
